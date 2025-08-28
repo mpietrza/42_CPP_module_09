@@ -6,7 +6,7 @@
 /*   By: mpietrza <mpietrza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 17:22:16 by mpietrza          #+#    #+#             */
-/*   Updated: 2025/08/11 19:11:53 by mpietrza         ###   ########.fr       */
+/*   Updated: 2025/08/28 16:02:11 by mpietrza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ bool BitcoinExchange::loadDatabase(const std::string &filename) {
 		if (!std::getline(iss, rateStr))
 			return false;
 		
-		//remove whitespaces
+		//remove whitespaces in the beginning and end of the strings
 		date.erase(date.find_last_not_of(" \t\r\n") + 1);
 		date.erase(0, date.find_first_not_of(" \t\r\n"));
 		rateStr.erase(rateStr.find_last_not_of(" \t\r\n") + 1);
@@ -59,3 +59,21 @@ bool BitcoinExchange::loadDatabase(const std::string &filename) {
 	return true;
 }
 
+void BitcoinExchange::processInput(const std::string &filename){
+	std::ifstream file(filename.c_str());
+	if (!file.is_open()) {
+		std::cout << "Error: could not open the file." << std::endl;
+		return;
+	}
+
+	std::string line;
+	//next line skips header again like in loadDatabase
+	std::getline(file,line);
+
+	while (std::getline(file, line)) {
+		std::istringstream iss(line);
+		std::string date, valueStr;
+
+		if (!std::getline(iss, date, '|'))\
+			std::cout << "Error: bad input => " << line << std::endl;
+}
