@@ -6,7 +6,7 @@
 /*   By: mpietrza <mpietrza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 17:22:16 by mpietrza          #+#    #+#             */
-/*   Updated: 2025/08/28 16:02:11 by mpietrza         ###   ########.fr       */
+/*   Updated: 2025/08/29 14:50:20 by mpietrza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,42 @@ void BitcoinExchange::processInput(const std::string &filename){
 		std::istringstream iss(line);
 		std::string date, valueStr;
 
-		if (!std::getline(iss, date, '|'))\
+		//parse date
+		if (!std::getline(iss, date, '|')) {
 			std::cout << "Error: bad input => " << line << std::endl;
+			continue;
+		}
+		
+		//remove whitespace in the beginning and the end of the strings
+		date.erase(date.find_last_not_of(" \t\r\n") + 1);
+		date.erase(0, date.find_first_not_of(" \t\r\n"));
+		valueStr.erase(valueStr.find_last_not_of(" \t\r\n") + 1);
+		valueStr.erase(0, valueStr.find_first_not_of(" \t\r\n"));
+
+		//Validate date
+		if (!isValidDate(date)) {
+			std::cout << "Error: bad input => " << date << std::endl;
+			continue;
+		}
+		
+		//validate value
+		if (!isValidValue(valueStr)) {
+			std::cout << "Error: bad input => " << valueStr << std::endl;
+			continue;
+		}
+		
+		//convert value to double and check it again
+		double value = std::strtod(valueStr.c_str(), NULL);
+		if (value < 0) {
+			std::cout << "Error: not a positive number." << std::endl;
+			continue;
+		}
+		if (value > 1000) {
+			std::cout << "Error: too large number." << std::endl;
+			continue;
+		}
+
+		double rate = getRate(date);
+		std::cout << date << " => " << value << " = " << value * rate << std::endl;
+	}
 }
