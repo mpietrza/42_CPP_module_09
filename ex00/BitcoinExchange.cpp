@@ -6,11 +6,14 @@
 /*   By: mpietrza <mpietrza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 17:22:16 by mpietrza          #+#    #+#             */
-/*   Updated: 2025/08/29 14:50:20 by mpietrza         ###   ########.fr       */
+/*   Updated: 2025/09/01 17:49:47 by mpietrza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "BitcoinExchange.hpp"
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 
 BitcoinExchange::BitcoinExchange() {}
 
@@ -112,4 +115,54 @@ void BitcoinExchange::processInput(const std::string &filename){
 		double rate = getRate(date);
 		std::cout << date << " => " << value << " = " << value * rate << std::endl;
 	}
+}
+
+static std::string getCurrentDate() {
+	std::time_t t = std::time(NULL);
+	std::tm tm = *std::localtime(&t);
+	std::ostringstream oss;
+	oss << std::setfill('0') << std::setw(4) << (tm.tm_year + 1900) << "-"
+		<< std::setw(2) << (tm.tm_mon + 1) << "-"
+		<< std::setw(2) << tm.tm_mday;
+	return oss.str();
+}
+
+
+static bool checkIfNotInFuture(const std::string&date) {
+	std::string today = getCurrentDate();
+	return date <= today;
+}	
+
+bool BitcoinExchange::isValidDate(const std::string &date) {
+	if (date.length() != 10)
+		return false;
+	if (date[4] != '-' || date[7] != '-')
+		return false;
+	int year, month, day;
+	char dash1, dash2;
+	std::istringstream iss(date);
+	if (!(iss >> year >> dash1 >> month >> dash2 >> day))
+		return false;
+	if (dash1 != '-' || dash2 != '-')
+		return false;
+	if (year < 2009) {
+		std::cout << "Error: there was no bitcoin yet in this year!" << std::endl;
+		return false;
+	}
+	if (!checkIfNotInFuture(date)) {
+		std::cout << "Error: the date is in the future!" << std::endl;
+		return false;
+	}
+	if (month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12 )
+		if (day > 31)
+			return false;
+	else if (month == 4 || month == 6 || month == 9 || month == 11)
+		if (day > 30)
+			return false;
+	else if (!((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)))
+		if (month == 2 && day > 29)
+			return false;
+	else if (month == 2 && day > 28)
+		return false;
+	return true;
 }
