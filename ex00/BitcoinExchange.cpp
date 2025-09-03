@@ -6,7 +6,7 @@
 /*   By: mpietrza <mpietrza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 17:22:16 by mpietrza          #+#    #+#             */
-/*   Updated: 2025/09/01 17:49:47 by mpietrza         ###   ########.fr       */
+/*   Updated: 2025/09/03 17:45:44 by mpietrza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ bool BitcoinExchange::loadDatabase(const std::string &filename) {
 		//parse exchange rate 
 		if (!std::getline(iss, rateStr))
 			return false;
-		
+
 		//remove whitespaces in the beginning and end of the strings
 		date.erase(date.find_last_not_of(" \t\r\n") + 1);
 		date.erase(0, date.find_first_not_of(" \t\r\n"));
@@ -82,7 +82,10 @@ void BitcoinExchange::processInput(const std::string &filename){
 			std::cout << "Error: bad input => " << line << std::endl;
 			continue;
 		}
-		
+		if (!std::getline(iss, valueStr)) {
+			std::cout << "Error: bad input => " << line << std::endl;
+			continue;
+		}
 		//remove whitespace in the beginning and the end of the strings
 		date.erase(date.find_last_not_of(" \t\r\n") + 1);
 		date.erase(0, date.find_first_not_of(" \t\r\n"));
@@ -97,7 +100,6 @@ void BitcoinExchange::processInput(const std::string &filename){
 		
 		//validate value
 		if (!isValidValue(valueStr)) {
-			std::cout << "Error: bad input => " << valueStr << std::endl;
 			continue;
 		}
 		
@@ -127,14 +129,13 @@ static std::string getCurrentDate() {
 	return oss.str();
 }
 
-
 static bool checkIfNotInFuture(const std::string&date) {
 	std::string today = getCurrentDate();
 	return date <= today;
 }	
 
 bool BitcoinExchange::isValidDate(const std::string &date) {
-	if (date.length() != 10)
+	if (date.length() != 10) 
 		return false;
 	if (date[4] != '-' || date[7] != '-')
 		return false;
@@ -146,23 +147,49 @@ bool BitcoinExchange::isValidDate(const std::string &date) {
 	if (dash1 != '-' || dash2 != '-')
 		return false;
 	if (year < 2009) {
-		std::cout << "Error: there was no bitcoin yet in this year!" << std::endl;
+		std::cout << "Error: Bitcoin started in 2009! ";
 		return false;
 	}
 	if (!checkIfNotInFuture(date)) {
-		std::cout << "Error: the date is in the future!" << std::endl;
+		std::cout << "Error: the date is in the future! ";
 		return false;
 	}
-	if (month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12 )
-		if (day > 31)
-			return false;
-	else if (month == 4 || month == 6 || month == 9 || month == 11)
-		if (day > 30)
-			return false;
-	else if (!((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)))
-		if (month == 2 && day > 29)
-			return false;
+	if ((month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12 ) && (day > 31))
+		return false;
+	else if ((month == 4 || month == 6 || month == 9 || month == 11) && (day > 30))
+		return false;
+	else if ((!((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))) && (month == 2 && day > 29))
+		return false;
 	else if (month == 2 && day > 28)
 		return false;
 	return true;
+}
+
+bool BitcoinExchange::isValidValue(const std::string &valueStr) {
+	char *endptr;
+	double value = std::strtod(valueStr.c_str(), &endptr);
+	if (endptr == valueStr.c_str())
+		return false;
+	if (value < 0) {
+		std::cout << "Error: not a positive number." << std::endl;
+		return false;
+	}
+	if (value > 1000) {
+		std::cout << "Error: too large number." << std::endl;
+		return false;
+	}
+	return true;
+}
+
+double BitcoinExchange::getRate(const std::string &date) const {
+	std::map<std::string, double>::const_iterator it = _database.find(date);
+	if (it != _database.end())
+		return it->second;
+
+	it = _database.lower_bound(date);
+	if (it == _database.begin())
+		return 0.0;
+	if (it == _database.end() || it->first != date)
+		--it;
+	return it->second;
 }
