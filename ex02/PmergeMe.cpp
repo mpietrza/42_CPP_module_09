@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PmergeMe.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mpietrza <mpietrza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: milosz <milosz@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 17:22:09 by mpietrza          #+#    #+#             */
-/*   Updated: 2025/09/09 20:44:49 by mpietrza         ###   ########.fr       */
+/*   Updated: 2025/09/10 17:54:30 by milosz           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include <sstream> //for std::istringstream
 #include <algorithm> //for std::lower_bound
 #include <deque> //for std::deque
+#include <iomanip> //for std::setprecision
 
 PmergeMe::PmergeMe() {}
 
@@ -23,14 +24,32 @@ bool PmergeMe::fillContainers(int argc, char **argv){
 	if (argc < 2)
 		return false;
 	
-	for (int i = 1; i < argc; ++i) {
-		std::istringstream iss(argv[i]);
-		int val;
-		char extra;
-		if (!(iss >> val) || (iss >> extra) || val <= 0)
-			return false;
-		_inputVector.push_back(val);
-		_inputDeque.push_back(val);
+	if (argc == 2) {
+		//data given as a single string argument or just one number
+		// USE "shuf -i 1-100000 -n 3000 | xargs ./PmergeMe " to generate random numbers
+		std::istringstream iss(argv[1]);
+		std::string token;
+		while (iss >> token) {
+			std::istringstream numStream(token);
+			int val;
+			char extra;
+			if (!(numStream >> val) || (numStream >> extra) || val <= 0){
+				return false;
+				_inputVector.push_back(val);
+				_inputDeque.push_back(val);
+			}
+		}
+	}
+	else {
+		for (int i = 1; i < argc; ++i) {
+			std::istringstream iss(argv[i]);
+			int val;
+			char extra;
+			if (!(iss >> val) || (iss >> extra) || val <= 0)
+				return false;
+			_inputVector.push_back(val);
+			_inputDeque.push_back(val);
+		}
 	}
 	return true;
 }
@@ -64,7 +83,7 @@ void PmergeMe::fordJohnsonSortVector(std::vector<int> &vec, int start, int end) 
 	
 	//push back the lower numbers from the pending chain to the main chain
 	for (size_t j = 0; j < pending.size(); ++j) {
-		std::vector<int>::iterator pos = std::lower_bound(mainChain.begin(), mainChain.end(), pending[i]);
+		std::vector<int>::iterator pos = std::lower_bound(mainChain.begin(), mainChain.end(), pending[j]);
 		mainChain.insert(pos, pending[j]);
 	}
 	
@@ -153,15 +172,21 @@ void PmergeMe::printAfter() const {
 }
 
 
-static long elapsedUSec(struct timeval start, struct timeval end) {
-	return (end.tv_sec - start.tv_sec) * 1000000L + (end.tv_usec - start.tv_usec);
+static double elapsedUSec(const struct timeval& start, const struct timeval& end) {
+	return (end.tv_sec - start.tv_sec) * 1e6 + (end.tv_usec - start.tv_usec);
 }
 
 void PmergeMe::printTimes() const {
-	std::cout << "Time to process the range of " << _inputVector.size() << " elements with std::vector: " << elapsedUSec(_startVector, _endVector) << " microseconds." << std::endl;
-	
-	std::cout << "Time to process the range of " << _inputDeque.size() << " elements with std::deque: " << elapsedUSec(_startDeque, _endDeque) << " microseconds." << std::endl;
-	
+	double vecTime = elapsedUSec(_startVector, _endVector); // microseconds
+	double deqTime = elapsedUSec(_startDeque, _endDeque);   // microseconds
+
+	std::cout << "Time to process the range of " << _inputVector.size()
+			  << " elements with std::vector: "
+			  << std::fixed << std::setprecision(5) << vecTime << " microseconds." << std::endl;
+
+	std::cout << "Time to process the range of " << _inputDeque.size()
+			  << " elements with std::deque: "
+			  << std::fixed << std::setprecision(5) << deqTime << " microseconds." << std::endl;
 }
 
 std::vector<int> &PmergeMe::getVector() {
