@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PmergeMe.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mpietrza <mpietrza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: milosz <milosz@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 16:38:10 by mpietrza          #+#    #+#             */
-/*   Updated: 2025/09/09 20:37:35 by mpietrza         ###   ########.fr       */
+/*   Updated: 2025/09/12 11:31:04 by milosz           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,9 @@
 #include <deque>
 #include <sys/time.h> //for gettimeofday
 
-#define PRINT_LIMIT 100
+#define PRINT_LIMIT 3000
+#define FALSE -1
+#define TRUE -2
 
 class PmergeMe
 {
@@ -37,7 +39,7 @@ class PmergeMe
 		PmergeMe();
 		~PmergeMe();
 
-		bool fillContainers(int argc, char **argv);
+		int fillContainers(int argc, char **argv);
 		void fordJohnsonSortVector(std::vector<int> &vec, int start, int end);
 		void fordJohnsonSortDeque(std::deque<int> &deq, int start, int end);
 

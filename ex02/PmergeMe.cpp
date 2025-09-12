@@ -6,7 +6,7 @@
 /*   By: milosz <milosz@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 17:22:09 by mpietrza          #+#    #+#             */
-/*   Updated: 2025/09/10 17:54:30 by milosz           ###   ########.fr       */
+/*   Updated: 2025/09/12 12:08:16 by milosz           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,21 +20,23 @@ PmergeMe::PmergeMe() {}
 
 PmergeMe::~PmergeMe() {}
 
-bool PmergeMe::fillContainers(int argc, char **argv){
+int PmergeMe::fillContainers(int argc, char **argv){
 	if (argc < 2)
-		return false;
+		return FALSE;
 	
 	if (argc == 2) {
 		//data given as a single string argument or just one number
-		// USE "shuf -i 1-100000 -n 3000 | xargs ./PmergeMe " to generate random numbers
+		// USE "shuf -i 1-100000 -n 3000 | xargs ./PmergeMe "
+		// or "./PmergeMe $(shuf -i 1-100000 -n 3000 | tr '\n' ' ')" to generate random numbers
 		std::istringstream iss(argv[1]);
 		std::string token;
+		int i = 0;
 		while (iss >> token) {
 			std::istringstream numStream(token);
 			int val;
 			char extra;
 			if (!(numStream >> val) || (numStream >> extra) || val <= 0){
-				return false;
+				return i;
 				_inputVector.push_back(val);
 				_inputDeque.push_back(val);
 			}
@@ -46,12 +48,12 @@ bool PmergeMe::fillContainers(int argc, char **argv){
 			int val;
 			char extra;
 			if (!(iss >> val) || (iss >> extra) || val <= 0)
-				return false;
+				return i;
 			_inputVector.push_back(val);
 			_inputDeque.push_back(val);
 		}
 	}
-	return true;
+	return TRUE;
 }
 
 
@@ -131,7 +133,7 @@ void PmergeMe::printBefore() const {
 	std::cout << "Before: ";
 	size_t i = 1; // is 1 for the normal mathematical counting from 1
 	for (std::deque<int>::const_iterator it = _inputDeque.begin(); it != _inputDeque.end(); ++it, ++i) {
-		if (i == PRINT_LIMIT) {
+		if (i == PRINT_LIMIT + 1) {
 			std::cout << "[...]" << std::endl;
 			break;
 		}
@@ -162,7 +164,7 @@ void PmergeMe::printAfter() const {
 	std::cout << "After:  ";
 	size_t i = 1;
 	for (std::vector<int>::const_iterator it = _inputVector.begin(); it != _inputVector.end(); ++it, ++i) {
-		if (i == PRINT_LIMIT) {
+		if (i == PRINT_LIMIT + 1) {
 			std::cout << "[...]" << std::endl;
 			break;
 		}
@@ -182,11 +184,11 @@ void PmergeMe::printTimes() const {
 
 	std::cout << "Time to process the range of " << _inputVector.size()
 			  << " elements with std::vector: "
-			  << std::fixed << std::setprecision(5) << vecTime << " microseconds." << std::endl;
+			  << std::fixed << std::setprecision(0) << vecTime << " microseconds." << std::endl;
 
 	std::cout << "Time to process the range of " << _inputDeque.size()
 			  << " elements with std::deque: "
-			  << std::fixed << std::setprecision(5) << deqTime << " microseconds." << std::endl;
+			  << std::fixed << std::setprecision(0) << deqTime << " microseconds." << std::endl;
 }
 
 std::vector<int> &PmergeMe::getVector() {
