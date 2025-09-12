@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: milosz <milosz@student.42.fr>              +#+  +:+       +#+        */
+/*   By: mpietrza <mpietrza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/09 19:58:22 by mpietrza          #+#    #+#             */
-/*   Updated: 2025/09/12 11:46:14 by milosz           ###   ########.fr       */
+/*   Updated: 2025/09/12 15:20:14 by mpietrza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
 		while (argv[1][i]) {
 			if (argv[1][i] < '1' || argv[1][i] > '9') {
 				std::cout << "Error in given arguments!" << std::endl
-						  << "argument is: " << argv[1][i] << std::endl;
+						  << "argument is on the position: " << i << std::endl;
 				return 1;
 			}
 			if (argv[1][i] == ' ' && argv[i + 1] && argv[1][i + 1] != ' ')
@@ -35,9 +35,9 @@ int main(int argc, char **argv) {
 	PmergeMe pmergme;
 	int errPos = pmergme.fillContainers(argc, argv);
 	if (errPos != TRUE) {
-		std::cout << "Error in given arguments!" << errPos  << std::endl;
+		std::cout << "Error in given arguments!" << std::endl;
 		if (errPos != FALSE)
-			std::cout  << "argument is: " << argv[1][errPos] << std::endl;
+			std::cout  << "argument is on the position: " << errPos << std::endl;
 		return 1;
 	}
 	pmergme.printBefore();

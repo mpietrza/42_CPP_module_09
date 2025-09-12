@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PmergeMe.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: milosz <milosz@student.42.fr>              +#+  +:+       +#+        */
+/*   By: mpietrza <mpietrza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 17:22:09 by mpietrza          #+#    #+#             */
-/*   Updated: 2025/09/12 12:08:16 by milosz           ###   ########.fr       */
+/*   Updated: 2025/09/12 15:25:50 by mpietrza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,10 +36,13 @@ int PmergeMe::fillContainers(int argc, char **argv){
 			int val;
 			char extra;
 			if (!(numStream >> val) || (numStream >> extra) || val <= 0){
-				return i;
+				return i + 1; // return the position of the invalid argument (1-based index)
+			}
+			else {
 				_inputVector.push_back(val);
 				_inputDeque.push_back(val);
 			}
+			i++;
 		}
 	}
 	else {
@@ -55,7 +58,6 @@ int PmergeMe::fillContainers(int argc, char **argv){
 	}
 	return TRUE;
 }
-
 
 void PmergeMe::fordJohnsonSortVector(std::vector<int> &vec, int start, int end) {
 	int len = end - start;
