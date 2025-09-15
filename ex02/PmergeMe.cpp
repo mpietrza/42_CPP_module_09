@@ -6,7 +6,7 @@
 /*   By: mpietrza <mpietrza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 17:22:09 by mpietrza          #+#    #+#             */
-/*   Updated: 2025/09/12 15:25:50 by mpietrza         ###   ########.fr       */
+/*   Updated: 2025/09/15 19:01:24 by mpietrza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,14 +20,32 @@ PmergeMe::PmergeMe() {}
 
 PmergeMe::~PmergeMe() {}
 
+bool PmergeMe::checkOneArg(const char *arg) {
+	int i = 0;
+	bool oneArg = true;
+	
+	while (arg[i] == ' ')
+		i++;
+	if (arg[i] == '\0') {
+		std::cout << "Error: only one argument: empty string, so there is nothing to sort!" << std::endl;
+		return true;
+	}
+	while (arg[i]) {
+		if (arg[i] == ' ' && arg[i + 1] && arg[i + 1] != ' ')
+			oneArg = false;
+		i++;
+	}
+	if (oneArg == true) {
+		std::cout << "Error: only one argument: " << arg << ", so there is nothing to sort!" << std::endl;
+	}
+	return oneArg;
+}
+
 int PmergeMe::fillContainers(int argc, char **argv){
 	if (argc < 2)
 		return FALSE;
 	
 	if (argc == 2) {
-		//data given as a single string argument or just one number
-		// USE "shuf -i 1-100000 -n 3000 | xargs ./PmergeMe "
-		// or "./PmergeMe $(shuf -i 1-100000 -n 3000 | tr '\n' ' ')" to generate random numbers
 		std::istringstream iss(argv[1]);
 		std::string token;
 		int i = 0;
@@ -151,18 +169,19 @@ static bool areContainersEqual(const std::vector<int> &vec, const std::deque<int
 }
 
 void PmergeMe::printAfter() const {
-	if (!areContainersEqual(_inputVector, _inputDeque)) {
+	if (!areContainersEqual(_outputVector, _outputDeque)) {
 		std::cout << "Error: Vector and deque differ!" << std::endl;
 		std::cout << "Vector: ";
-		for (size_t i = 0; i < _inputVector.size(); ++i)
-			std::cout << _inputVector[i] << " ";
+		for (size_t i = 0; i < _outputVector.size(); ++i)
+			std::cout << _outputVector[i] << " ";
 		std::cout << std::endl;
 		std::cout << "Deque:  ";
-		for (size_t i = 0; i < _inputDeque.size(); ++i)
-			std::cout << _inputDeque[i] << " ";
+		for (size_t i = 0; i < _outputDeque.size(); ++i)
+			std::cout << _outputDeque[i] << " ";
 		std::cout << std::endl;
 		return;
 	}
+	std::cout << "-------------------------" << std::endl;
 	std::cout << "After:  ";
 	size_t i = 1;
 	for (std::vector<int>::const_iterator it = _inputVector.begin(); it != _inputVector.end(); ++it, ++i) {
@@ -177,28 +196,53 @@ void PmergeMe::printAfter() const {
 
 
 static double elapsedUSec(const struct timeval& start, const struct timeval& end) {
-	return (end.tv_sec - start.tv_sec) * 1e6 + (end.tv_usec - start.tv_usec);
+	return (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_usec - start.tv_usec);
 }
 
 void PmergeMe::printTimes() const {
-	double vecTime = elapsedUSec(_startVector, _endVector); // microseconds
-	double deqTime = elapsedUSec(_startDeque, _endDeque);   // microseconds
+	double parsingTime = elapsedUSec(_startParsing, _endParsing); // microseconds
+	double vecTime = elapsedUSec(_startVector, _endVector) + parsingTime; // microseconds
+	double deqTime = elapsedUSec(_startDeque, _endDeque) + parsingTime;   // microseconds
 
 	std::cout << "Time to process the range of " << _inputVector.size()
 			  << " elements with std::vector: "
-			  << std::fixed << std::setprecision(0) << vecTime << " microseconds." << std::endl;
+			  << std::fixed << std::setprecision(1) << vecTime << " microseconds." << std::endl;
 
 	std::cout << "Time to process the range of " << _inputDeque.size()
 			  << " elements with std::deque: "
-			  << std::fixed << std::setprecision(0) << deqTime << " microseconds." << std::endl;
+			  << std::fixed << std::setprecision(1) << deqTime << " microseconds." << std::endl;
 }
 
-std::vector<int> &PmergeMe::getVector() {
-	return _inputVector;
+int PmergeMe::printErrPos(const int errPos) const {
+		std::cout << "Error in given arguments!" << std::endl;
+		if (errPos != FALSE)
+			std::cout  << "argument is on the position: " << errPos << std::endl;
+		return 1;
 }
 
-std::deque<int> &PmergeMe::getDeque() {
-	return _inputDeque;
+void PmergeMe::copyContainers() {
+	_outputVector = _inputVector;
+	_outputDeque = _inputDeque;
+}
+
+std::vector<int> &PmergeMe::getVector(int mode) {
+	if (mode == IN)
+		return _inputVector;
+	else if (mode == OUT)
+		return _outputVector;
+	else
+		std::cout << "Error in getters" << std::endl;
+	return _inputVector; //to avoid compiler warning
+}
+
+std::deque<int> &PmergeMe::getDeque(int mode) {
+	if (mode == IN)
+		return _inputDeque;
+	else if (mode == OUT)
+		return _outputDeque;
+	else
+		std::cout << "Error in getters" << std::endl;
+	return _inputDeque; //to avoid compiler warning
 }
 
 int PmergeMe::getVectorSize() const {
@@ -209,19 +253,30 @@ int PmergeMe::getDequeSize() const {
 	return _inputDeque.size();
 }
 
-
-void PmergeMe::setStartVector(const timeval& tv) {
-	_startVector = tv;
+bool PmergeMe::areNumbersRepetitive(const std::vector<int> &vec) const {
+	for (size_t i = 1; i < vec.size(); ++i) {
+		if (vec[i] == vec[i - 1])
+			return true;
+	}
+	return false;
 }
 
-void PmergeMe::setEndVector(const timeval& tv) {
-	_endVector = tv;
+void PmergeMe::setStart(const timeval& tv, const int mode) {
+	if (mode == PARSE) 
+		_startParsing = tv;
+	else if (mode == VEC)
+		_startVector = tv;
+	else if (mode == DEQ)
+		_startDeque = tv;
+	else
+		std::cout << "Error in time counting!" << std::endl;
 }
 
-void PmergeMe::setStartDeque(const timeval& tv) {
-	_startDeque = tv;
-}
-
-void PmergeMe::setEndDeque(const timeval& tv) {
-	_endDeque = tv;
+void PmergeMe::setEnd(const timeval& tv, const int mode) {
+	if (mode == PARSE)
+		_endParsing = tv;
+	else if (mode == VEC)
+		_endVector = tv;
+	else if (mode == DEQ)
+		_endDeque = tv;
 }
