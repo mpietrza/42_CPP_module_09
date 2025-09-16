@@ -1,5 +1,3 @@
-Here are recommended containers for each exercise, based on the requirements and restrictions:
-
 ### ex00 (Bitcoin Exchange)
 - **Recommended container:** `std::map`
 - **Reason:** You need to associate dates (as keys) with bitcoin prices (as values) and efficiently find the closest lower date. `std::map` provides sorted keys and fast lookup for this use case.
@@ -17,7 +15,6 @@ Here are recommended containers for each exercise, based on the requirements and
   - `std::vector`  
   - `std::deque`
 - **Reason:** You must use two different containers. Both support random access and are suitable for implementing the Ford-Johnson (merge-insert) sort.  
-- **Note:** Do **not** use containers from previous exercises.
 
 ---
 
@@ -28,5 +25,3 @@ Here are recommended containers for each exercise, based on the requirements and
 | ex00     | std::map                | -                          |
 | ex01     | std::stack              | std::map                   |
 | ex02     | std::vector, std::deque | std::map, std::stack       |
-
-Let me know if you want code examples for any of these!

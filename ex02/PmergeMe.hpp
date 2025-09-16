@@ -6,7 +6,7 @@
 /*   By: mpietrza <mpietrza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 16:38:10 by mpietrza          #+#    #+#             */
-/*   Updated: 2025/09/15 19:00:11 by mpietrza         ###   ########.fr       */
+/*   Updated: 2025/09/16 14:33:52 by mpietrza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 #define PRINT_LIMIT 3000
 
 #define FALSE -1
-#define TRUE -2
+#define TRUE  -2
 
 #define PARSE 0
 #define VEC   1
