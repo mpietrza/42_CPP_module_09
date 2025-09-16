@@ -6,7 +6,7 @@
 /*   By: mpietrza <mpietrza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 17:22:16 by mpietrza          #+#    #+#             */
-/*   Updated: 2025/09/16 15:07:41 by mpietrza         ###   ########.fr       */
+/*   Updated: 2025/09/16 17:11:48 by mpietrza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,8 +155,8 @@ bool BitcoinExchange::isValidDate(const std::string &date) {
 		return false;
 	if (dash1 != '-' || dash2 != '-')
 		return false;
-	if (year < 2009) {
-		std::cout << "Error: Bitcoin started in 2009! ";
+	if ((year < 2009) || (year == 2009 && month == 1 && day == 1)) {
+		std::cout << "Error: Bitcoin started on 2nd of January 2009! ";
 		return false;
 	}
 	if (!checkIfNotInFuture(date)) {

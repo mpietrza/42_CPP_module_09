@@ -6,7 +6,7 @@
 /*   By: mpietrza <mpietrza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 17:22:09 by mpietrza          #+#    #+#             */
-/*   Updated: 2025/09/16 15:17:34 by mpietrza         ###   ########.fr       */
+/*   Updated: 2025/09/16 19:24:17 by mpietrza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,6 +104,32 @@ int PmergeMe::fillContainers(int argc, char **argv){
 		}
 	}
 	return TRUE;
+}
+
+std::vector<int> PmergeMe::jacobstahlOrderVector(int n) {
+	std::vector<int> order;;
+	std::vector<bool> used(n, false);
+
+	//generate Jacobstahl numbers
+	std::vector<int> jac;
+	jac.push_back(0);
+	if (n > 1)
+		jac.push_back(1);
+	for (int i = 2; ; ++i) {
+		int next = jac[i - 1] + 2*jac[i-2];
+		if (next >= n)
+			break;
+		jac.push_back(next);
+	}
+
+	//add Jacobstahl indices (skip 0)
+	for (int i = 1; i < jac.size(); ++i) {
+		order.push_back(jac[i]);
+		used[jac[i]] = true;
+	}
+
+	//add remaining indices in order
+	for (int i 	//<<<<<<<<<<<<<----------------------
 }
 
 void PmergeMe::fordJohnsonSortVector(std::vector<int> &vec, int start, int end) {

@@ -6,7 +6,7 @@
 /*   By: mpietrza <mpietrza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 16:38:10 by mpietrza          #+#    #+#             */
-/*   Updated: 2025/09/16 14:33:52 by mpietrza         ###   ########.fr       */
+/*   Updated: 2025/09/16 19:14:01 by mpietrza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,10 @@ class PmergeMe
 		
 		bool checkOneArg(const char *arg);
 		int fillContainers(int argc, char **argv);
+
+		std::vector<int> jacobstahlOrderVector(int n);
+		std::deque<int> jacobstahlOrderDeque(int n);
+
 		void fordJohnsonSortVector(std::vector<int> &vec, int start, int end);
 		void fordJohnsonSortDeque(std::deque<int> &deq, int start, int end);
 
