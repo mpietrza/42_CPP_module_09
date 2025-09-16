@@ -6,7 +6,7 @@
 /*   By: mpietrza <mpietrza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 17:22:09 by mpietrza          #+#    #+#             */
-/*   Updated: 2025/09/15 19:01:24 by mpietrza         ###   ########.fr       */
+/*   Updated: 2025/09/16 15:17:34 by mpietrza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,35 @@
 PmergeMe::PmergeMe() {}
 
 PmergeMe::~PmergeMe() {}
+
+PmergeMe::PmergeMe(const PmergeMe &other)
+	: _inputVector(other._inputVector),
+	  _outputVector(other._outputVector),
+	  _inputDeque(other._inputDeque),
+	  _outputDeque(other._outputDeque),
+	  _startParsing(other._startParsing),
+	  _endParsing(other._endParsing),
+	  _startVector(other._startVector),
+	  _endVector(other._endVector),
+	  _startDeque(other._startDeque),
+	  _endDeque(other._endDeque)
+{}
+
+PmergeMe &PmergeMe::operator=(const PmergeMe &other) {
+	if (this != &other) {
+		_inputVector = other._inputVector;
+		_outputVector = other._outputVector;
+		_inputDeque = other._inputDeque;
+		_outputDeque = other._outputDeque;
+		_startParsing = other._startParsing;
+		_endParsing = other._endParsing;
+		_startVector = other._startVector;
+		_endVector = other._endVector;
+		_startDeque = other._startDeque;
+		_endDeque = other._endDeque;
+	}
+	return *this;
+}
 
 bool PmergeMe::checkOneArg(const char *arg) {
 	int i = 0;

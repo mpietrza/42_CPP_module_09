@@ -6,7 +6,7 @@
 /*   By: mpietrza <mpietrza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/04 17:10:30 by mpietrza          #+#    #+#             */
-/*   Updated: 2025/09/04 19:17:55 by mpietrza         ###   ########.fr       */
+/*   Updated: 2025/09/16 15:14:09 by mpietrza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,15 @@
 RPN::RPN() {}
 
 RPN::~RPN() {}
+
+RPN::RPN(const RPN &other) {
+	(void)other;
+}
+
+RPN &RPN::operator=(const RPN &other) {
+	(void)other;
+	return *this;
+}
 
 void RPN::evaluate(const std::string &input) {
 	std::istringstream iss(input);
