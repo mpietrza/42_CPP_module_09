@@ -6,7 +6,7 @@
 /*   By: mpietrza <mpietrza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/09 19:58:22 by mpietrza          #+#    #+#             */
-/*   Updated: 2025/09/15 19:05:16 by mpietrza         ###   ########.fr       */
+/*   Updated: 2025/09/17 14:24:13 by mpietrza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
 
 	if (pmergeme.areNumbersRepetitive(pmergeme.getVector(OUT))) {
 		std::cout << "Error: Repetitive numbers found!" << std::endl;
-		return 1;
+		//return 1;
 	}
 
 	pmergeme.printBefore();

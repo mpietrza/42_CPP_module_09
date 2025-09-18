@@ -6,7 +6,7 @@
 /*   By: mpietrza <mpietrza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 17:22:09 by mpietrza          #+#    #+#             */
-/*   Updated: 2025/09/16 19:24:17 by mpietrza         ###   ########.fr       */
+/*   Updated: 2025/09/18 14:38:02 by mpietrza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,29 +107,58 @@ int PmergeMe::fillContainers(int argc, char **argv){
 }
 
 std::vector<int> PmergeMe::jacobstahlOrderVector(int n) {
-	std::vector<int> order;;
-	std::vector<bool> used(n, false);
-
-	//generate Jacobstahl numbers
-	std::vector<int> jac;
-	jac.push_back(0);
-	if (n > 1)
-		jac.push_back(1);
-	for (int i = 2; ; ++i) {
-		int next = jac[i - 1] + 2*jac[i-2];
-		if (next >= n)
-			break;
-		jac.push_back(next);
+	std::vector<int> order;
+	if (n <= 0)
+		return order;
+	if (n == 1) {
+		order.push_back(0);
+		return order;
 	}
 
-	//add Jacobstahl indices (skip 0)
-	for (int i = 1; i < jac.size(); ++i) {
-		order.push_back(jac[i]);
-		used[jac[i]] = true;
+	std::vector<bool> used(n, false);
+
+	// Generate Jacobsthal indices: 1, 3, 5, 11, ...
+	int j0 = 0; // J(1)
+	int j1 = 1; // J(2)
+	// build Jacobsthal checkpoints (< n): 1, 3, 5, 11, ...
+	std::vector<int> jacobs;
+	while (j1 < n) {
+		jacobs.push_back(j1);
+		int next = j1 + 2 * j0;
+		j0 = j1;
+		j1 = next;
+	}
+
+	// first index is always 0
+	order.push_back(0);
+	used[0] = true;
+
+	int prev = 1;
+	for (size_t t = 0; t < jacobs.size() && prev < n; ++t) {
+		int up = std::min(jacobs[t], n - 1);
+		for (int i = up; i >= prev; --i) {
+			if (!used[i]) {
+				order.push_back(i);
+				used[i] = true;
+			}
+		}
+		prev = jacobs[t] + 1;
+	}
+
+	// add any remaining indices in descending order
+	for (int i = n - 1; i >= prev; --i) {
+		if (!used[i]) {
+			order.push_back(i);
+			used[i] = true;
+		}
 	}
 
 	//add remaining indices in order
-	for (int i 	//<<<<<<<<<<<<<----------------------
+	for (int i = n - 1; i >= 0; --i) {
+		if (!used[i])
+			order.push_back(i);
+	}
+	return order;
 }
 
 void PmergeMe::fordJohnsonSortVector(std::vector<int> &vec, int start, int end) {
@@ -158,10 +187,12 @@ void PmergeMe::fordJohnsonSortVector(std::vector<int> &vec, int start, int end) 
 	//recursively go through the main chain
 	fordJohnsonSortVector(mainChain, 0, mainChain.size());
 	
-	//push back the lower numbers from the pending chain to the main chain
-	for (size_t j = 0; j < pending.size(); ++j) {
-		std::vector<int>::iterator pos = std::lower_bound(mainChain.begin(), mainChain.end(), pending[j]);
-		mainChain.insert(pos, pending[j]);
+	//push back the lower numbers from the pending chain to the main chain in Jacobstahl order
+	std::vector<int> order = jacobstahlOrderVector(pending.size());
+	for (int idx = 0; idx < static_cast<int>(order.size()); ++idx) {
+		int pendingIdx = order[idx];
+		std::vector<int>::iterator pos = std::lower_bound(mainChain.begin(), mainChain.end(), pending[pendingIdx]);
+		mainChain.insert(pos, pending[pendingIdx]);
 	}
 	
 	//push all the sorted numbers back to the input chain
@@ -239,7 +270,7 @@ void PmergeMe::printAfter() const {
 	std::cout << "-------------------------" << std::endl;
 	std::cout << "After:  ";
 	size_t i = 1;
-	for (std::vector<int>::const_iterator it = _inputVector.begin(); it != _inputVector.end(); ++it, ++i) {
+	for (std::vector<int>::const_iterator it = _outputVector.begin(); it != _outputVector.end(); ++it, ++i) {
 		if (i == PRINT_LIMIT + 1) {
 			std::cout << "[...]" << std::endl;
 			break;
@@ -310,8 +341,10 @@ int PmergeMe::getDequeSize() const {
 
 bool PmergeMe::areNumbersRepetitive(const std::vector<int> &vec) const {
 	for (size_t i = 1; i < vec.size(); ++i) {
-		if (vec[i] == vec[i - 1])
+		if (vec[i] == vec[i - 1]) {
+			std::cout << "Repetitive number found: " << vec[i] << std::endl;
 			return true;
+		}
 	}
 	return false;
 }
