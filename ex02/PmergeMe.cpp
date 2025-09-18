@@ -6,7 +6,7 @@
 /*   By: mpietrza <mpietrza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 17:22:09 by mpietrza          #+#    #+#             */
-/*   Updated: 2025/09/18 14:38:02 by mpietrza         ###   ########.fr       */
+/*   Updated: 2025/09/18 16:58:37 by mpietrza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,8 +106,74 @@ int PmergeMe::fillContainers(int argc, char **argv){
 	return TRUE;
 }
 
-std::vector<int> PmergeMe::jacobstahlOrderVector(int n) {
+// Generate the order in which to insert elements from the "pending" array
+// according to the Jacobsthal sequence, for Ford-Johnson sorting.
+std::vector<int> PmergeMe::jacobsthalOrderVector(int n) {
 	std::vector<int> order;
+	if (n <= 0) 
+		return order;
+	if (n == 1) {
+		order.push_back(0);
+		return order;
+	}
+
+	// Build distinct Jacobsthal numbers >=1: 1,3,5,11,21,...
+	std::vector<int> J;
+	J.push_back(1);
+	int j0 = 0;   // J(0)
+	int j1 = 1;   // J(1)
+	while (true) {
+		int next = j1 + 2 * j0; // recurrence
+		if (next >= n)
+			break;
+		if (next != J.back())
+			J.push_back(next);
+		j0 = j1;
+		j1 = next;
+	}
+
+	std::vector<char> used(n, 0);
+	// First index (if exists) is 1
+	if (n > 1) {
+		order.push_back(1);
+		used[1] = 1;
+	}
+
+	// For each Jacobsthal boundary, add descending block (boundary .. previous+1)
+	for (size_t k = 1; k < J.size(); ++k) {
+		int hi = J[k];
+		int loExcl = J[k - 1]; // exclusive lower bound
+		for (int i = hi; i > loExcl; --i) {
+			if (i < n && !used[i]) {
+				order.push_back(i);
+				used[i] = 1;
+			}
+		}
+		// After first block, insert 0 (canonical Ford-Johnson order places 0 early)
+		if (k == 1 && n > 0 && !used[0]) {
+			order.push_back(0);
+			used[0] = 1;
+		}
+	}
+
+	// If 0 not yet inserted (e.g. very small n), add it now
+	if (n > 0 && !used[0]) {
+		order.push_back(0);
+		used[0] = 1;
+	}
+
+	// Remaining indices (those not covered by Jacobsthal blocks) in reverse
+	for (int i = n - 1; i >= 0; --i) {
+		if (!used[i]) {
+			order.push_back(i);
+			used[i] = 1;
+		}
+	}
+	return order;
+}
+
+std::deque<int> PmergeMe::jacobsthalOrderDeque(int n) {
+	std::deque<int> order;
 	if (n <= 0)
 		return order;
 	if (n == 1) {
@@ -115,48 +181,52 @@ std::vector<int> PmergeMe::jacobstahlOrderVector(int n) {
 		return order;
 	}
 
-	std::vector<bool> used(n, false);
-
-	// Generate Jacobsthal indices: 1, 3, 5, 11, ...
-	int j0 = 0; // J(1)
-	int j1 = 1; // J(2)
-	// build Jacobsthal checkpoints (< n): 1, 3, 5, 11, ...
-	std::vector<int> jacobs;
-	while (j1 < n) {
-		jacobs.push_back(j1);
+	std::deque<int> J;
+	J.push_back(1);
+	int j0 = 0;
+	int j1 = 1;
+	while(true) {
 		int next = j1 + 2 * j0;
+		if (next >= n)
+			break;
+		if (next != J.back())
+			J.push_back(next);
 		j0 = j1;
 		j1 = next;
 	}
 
-	// first index is always 0
-	order.push_back(0);
-	used[0] = true;
+	std::deque<char> used(n,0);
+	if (n > 1) {
+		order.push_back(1);
+		used[1] = 1;
+	}
 
-	int prev = 1;
-	for (size_t t = 0; t < jacobs.size() && prev < n; ++t) {
-		int up = std::min(jacobs[t], n - 1);
-		for (int i = up; i >= prev; --i) {
-			if (!used[i]) {
+	for (size_t k = 1; k < J.size(); ++k) {
+		int hi = J[k];
+		int loExcl = J[k -1];
+		for (int i = hi; i > loExcl; --i) {
+			if (i < n && !used[1]) {
 				order.push_back(i);
-				used[i] = true;
+				used[i] = 1;
 			}
 		}
-		prev = jacobs[t] + 1;
-	}
 
-	// add any remaining indices in descending order
-	for (int i = n - 1; i >= prev; --i) {
-		if (!used[i]) {
-			order.push_back(i);
-			used[i] = true;
+		if (k ==1 && n > 0 && !used[0]) {
+			order.push_back(0);
+			used[0] = 1;
 		}
 	}
 
-	//add remaining indices in order
+	if (n > 0 && !used[0]) {
+		order.push_back(0);
+		used[0] = 1;
+	}
+	
 	for (int i = n - 1; i >= 0; --i) {
-		if (!used[i])
+		if (!used[i]) {
 			order.push_back(i);
+			used[i] = 1;
+		}
 	}
 	return order;
 }
@@ -165,40 +235,38 @@ void PmergeMe::fordJohnsonSortVector(std::vector<int> &vec, int start, int end) 
 	int len = end - start;
 	if (len <= 1)
 		return;
-	
-	std::vector<int> mainChain; //bigger numbers
-	std::vector<int> pending; //smaller numbers
-	int i = start;
 
+	std::vector<int> mainChain;
+	std::vector<int> pending;
+	mainChain.reserve((len + 1) / 2);
+	pending.reserve(len / 2);
+
+	int i = start;
 	for (; i + 1 < end; i += 2) {
 		if (vec[i] < vec[i + 1]) {
 			mainChain.push_back(vec[i + 1]);
 			pending.push_back(vec[i]);
-		}
-		else {
+		} else {
 			mainChain.push_back(vec[i]);
 			pending.push_back(vec[i + 1]);
 		}
 	}
-	//the last number without pair (if exists) is pushed to the main chain
 	if (i < end)
 		mainChain.push_back(vec[i]);
-	
-	//recursively go through the main chain
-	fordJohnsonSortVector(mainChain, 0, mainChain.size());
-	
-	//push back the lower numbers from the pending chain to the main chain in Jacobstahl order
-	std::vector<int> order = jacobstahlOrderVector(pending.size());
-	for (int idx = 0; idx < static_cast<int>(order.size()); ++idx) {
-		int pendingIdx = order[idx];
-		std::vector<int>::iterator pos = std::lower_bound(mainChain.begin(), mainChain.end(), pending[pendingIdx]);
-		mainChain.insert(pos, pending[pendingIdx]);
+
+	if (mainChain.size() > 1)
+		fordJohnsonSortVector(mainChain, 0, static_cast<int>(mainChain.size()));
+
+	std::vector<int> order = jacobsthalOrderVector(static_cast<int>(pending.size()));
+	for (size_t idx = 0; idx < order.size(); ++idx) {
+		int pIdx = order[idx];
+		std::vector<int>::iterator pos =
+			std::lower_bound(mainChain.begin(), mainChain.end(), pending[pIdx]);
+		mainChain.insert(pos, pending[pIdx]);
 	}
-	
-	//push all the sorted numbers back to the input chain
+
 	for (int k = 0; k < len; ++k)
 		vec[start + k] = mainChain[k];
-
 }
 
 void PmergeMe::fordJohnsonSortDeque(std::deque<int> &deq, int start, int end) {
@@ -207,28 +275,31 @@ void PmergeMe::fordJohnsonSortDeque(std::deque<int> &deq, int start, int end) {
 		return;
 
 	std::deque<int> mainChain;
-	std::deque<int> pending;
-	int i = start;
+	std::vector<int> pending;
+	//ipending.reserve(len / 2);
 
+	int i = start;
 	for (; i + 1 < end; i += 2) {
 		if (deq[i] < deq[i + 1]) {
 			mainChain.push_back(deq[i + 1]);
 			pending.push_back(deq[i]);
-		}
-		else {
+		} else {
 			mainChain.push_back(deq[i]);
 			pending.push_back(deq[i + 1]);
 		}
 	}
-
 	if (i < end)
 		mainChain.push_back(deq[i]);
-	
-	fordJohnsonSortDeque(mainChain, 0, mainChain.size());
-	
-	for (size_t j = 0; j < pending.size(); ++j) {
-		std::deque<int>::iterator pos = std::lower_bound(mainChain.begin(), mainChain.end(), pending[j]);
-		mainChain.insert(pos, pending[j]);
+
+	if (mainChain.size() > 1)
+		fordJohnsonSortDeque(mainChain, 0, static_cast<int>(mainChain.size()));
+
+	std::deque<int> order = jacobsthalOrderDeque(static_cast<int>(pending.size()));
+	for (size_t idx = 0; idx < order.size(); ++idx) {
+		int pIdx = order[idx];
+		std::deque<int>::iterator pos =
+			std::lower_bound(mainChain.begin(), mainChain.end(), pending[pIdx]);
+		mainChain.insert(pos, pending[pIdx]);
 	}
 
 	for (int k = 0; k < len; ++k)
@@ -286,17 +357,19 @@ static double elapsedUSec(const struct timeval& start, const struct timeval& end
 }
 
 void PmergeMe::printTimes() const {
-	double parsingTime = elapsedUSec(_startParsing, _endParsing); // microseconds
-	double vecTime = elapsedUSec(_startVector, _endVector) + parsingTime; // microseconds
-	double deqTime = elapsedUSec(_startDeque, _endDeque) + parsingTime;   // microseconds
+	double parsingTime = elapsedUSec(_startParsing, _endParsing);
+	double vecTime = elapsedUSec(_startVector, _endVector);
+	double deqTime = elapsedUSec(_startDeque, _endDeque);
 
 	std::cout << "Time to process the range of " << _inputVector.size()
 			  << " elements with std::vector: "
-			  << std::fixed << std::setprecision(1) << vecTime << " microseconds." << std::endl;
+			  << std::fixed << std::setprecision(1)
+			  << vecTime + parsingTime << " microseconds." << std::endl;
 
 	std::cout << "Time to process the range of " << _inputDeque.size()
 			  << " elements with std::deque: "
-			  << std::fixed << std::setprecision(1) << deqTime << " microseconds." << std::endl;
+			  << std::fixed << std::setprecision(1)
+			  << deqTime + parsingTime << " microseconds." << std::endl;
 }
 
 int PmergeMe::printErrPos(const int errPos) const {
