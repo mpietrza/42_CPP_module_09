@@ -6,7 +6,7 @@
 /*   By: mpietrza <mpietrza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 17:22:09 by mpietrza          #+#    #+#             */
-/*   Updated: 2025/09/18 16:58:37 by mpietrza         ###   ########.fr       */
+/*   Updated: 2025/09/19 15:42:56 by mpietrza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -238,8 +238,6 @@ void PmergeMe::fordJohnsonSortVector(std::vector<int> &vec, int start, int end) 
 
 	std::vector<int> mainChain;
 	std::vector<int> pending;
-	mainChain.reserve((len + 1) / 2);
-	pending.reserve(len / 2);
 
 	int i = start;
 	for (; i + 1 < end; i += 2) {
@@ -276,7 +274,6 @@ void PmergeMe::fordJohnsonSortDeque(std::deque<int> &deq, int start, int end) {
 
 	std::deque<int> mainChain;
 	std::vector<int> pending;
-	//ipending.reserve(len / 2);
 
 	int i = start;
 	for (; i + 1 < end; i += 2) {
